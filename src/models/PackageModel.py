@@ -37,6 +37,53 @@ class OutputImage(Output):
     class Config:
         title = "Image"
 
+class SizeImage(Config):
+    """
+        Resize for image
+    """
+    name: Literal["SizeImage"] = "SizeImage"
+    value: int = Field(ge=32, le=4096,default=640) # input tipi veriliyor ve türü belirleniyor
+    type: Literal["number"] = "number" # value muzun tipi (number, object, string, bool, list, dict)
+    field: Literal["textInput"] = "textInput" # parametrenin web arayüzünde görünüşü 
+    placeHolder: Literal["[32, 4096]"] = "[32, 4096]" # Alan doldurulmadan önce soluk renkle yazan yazı
+
+    class Config:
+        title = "Resize"
+        json_schema_extra = {
+            "shortDescription": "Resize Degree"
+        }
+ 
+class ResizeExecutorInputs(Inputs):
+    inputImage: InputImage
+           
+class ResizeExecutorConfigs(Configs):
+    sizeImage: SizeImage  
+
+class ResizeExecutorOutputs(Outputs):
+    outputImage: OutputImage
+
+class ResizeExecutorRequest(Request):
+    inputs: Optional[ResizeExecutorInputs]
+    configs: ResizeExecutorConfigs
+
+class ResizeExecutorResponse(Response):
+    outputs: ResizeExecutorOutputs
+
+class ResizeExecutor(Config):
+    name: Literal["ResizeExecutor"] = "ResizeExecutor"
+    value: Union[ResizeExecutorRequest, ResizeExecutorResponse]
+    type: Literal["object"] = "object"
+    field: Literal["option"] = "option"
+
+    class Config:
+        title = "Resize"
+        json_schema_extra = {
+            "target": {
+                "value": 0
+            }
+        }
+
+# Rotate Executor
 
 class KeepSideFalse(Config):
     name: Literal["False"] = "False"
@@ -52,7 +99,7 @@ class KeepSideTrue(Config):
     name: Literal["True"] = "True"
     value: Literal[True] = True
     type: Literal["bool"] = "bool"
-    field: Literal["option"] = "option"
+    field: Literal["option"] = "option" 
 
     class Config:
         title = "Enable"
@@ -63,88 +110,89 @@ class KeepSideBBox(Config):
         Rotate image without catting off sides.
     """
     name: Literal["KeepSide"] = "KeepSide"
-    value: Union[KeepSideTrue, KeepSideFalse]
-    type: Literal["object"] = "object"
-    field: Literal["dropdownlist"] = "dropdownlist"
+    value: Union[KeepSideTrue, KeepSideFalse] # union(birleştirme) birden fazla değer. ya o ya o
+    type: Literal["object"] = "object" # object çünkü class
+    field: Literal["dropdownlist"] = "dropdownlist" 
 
     class Config:
         title = "Keep Sides"
 
 
-class Degree(Config):
+class Rotate(Config):
     """
-        Positive angles specify counterclockwise rotation while negative angles indicate clockwise rotation.
+        Positive angles specify counterclockwise rotation while negative angles indicate clockwise rotation. :)
     """
-    name: Literal["Degree"] = "Degree"
-    value: int = Field(ge=-359.0, le=359.0,default=0)
-    type: Literal["number"] = "number"
-    field: Literal["textInput"] = "textInput"
-    placeHolder: Literal["[-359, 359]"] = "[-359, 359]"
+    name: Literal["Rotate"] = "Rotate"
+    value: int = Field(ge=-359.0, le=359.0,default=90) # input tipi veriliyor ve türü belirleniyor
+    type: Literal["number"] = "number" # value muzun tipi (number, object, string, bool, list, dict)
+    field: Literal["textInput"] = "textInput" # parametrenin web arayüzünde görünüşü 
+    placeHolder: Literal["[-359, 359]"] = "[-359, 359]" # Alan doldurulmadan önce soluk renkle yazan yazı
 
     class Config:
-        title = "Angle"
+        title = "Rotate"
+        json_schema_extra = {
+            "shortDescription": "Rotate Degree"
+        }
 
 
-class PackageInputs(Inputs):
-    inputImage: InputImage
+class RotateExecutorInputs(Inputs):
+    inputImage: InputImage # İnputları belirle alt alta | baş harf küçük
 
 
-class PackageConfigs(Configs):
-    degree: Degree
+class RotateExecutorConfigs(Configs):
+    rotate: Rotate  
     drawBBox: KeepSideBBox
 
 
-class PackageOutputs(Outputs):
-    outputImage: OutputImage
+class RotateExecutorOutputs(Outputs):
+    outputImage: OutputImage # Keylerin baş harfi her zaman küçük Çıktıları class olucak
 
 
-class PackageRequest(Request):
-    inputs: Optional[PackageInputs]
-    configs: PackageConfigs
+class RotateExecutorRequest(Request):
+    inputs: Optional[RotateExecutorInputs] # İnput alması zorunlu değil Optional
+    configs: RotateExecutorConfigs
 
     class Config:
         json_schema_extra = {
             "target": "configs"
         }
+    
+class RotateExecutorResponse(Response):
+    outputs: RotateExecutorOutputs
 
-
-class PackageResponse(Response):
-    outputs: PackageOutputs
-
-
-class PackageExecutor(Config):
-    name: Literal["Package"] = "Package"
-    value: Union[PackageRequest, PackageResponse]
+class RotateExecutor(Config):
+    name: Literal["RotateExecutor"] = "RotateExecutor"
+    value: Union[RotateExecutorRequest, RotateExecutorResponse]
     type: Literal["object"] = "object"
     field: Literal["option"] = "option"
 
     class Config:
-        title = "Package"
+        title = "Rotate"
         json_schema_extra = {
             "target": {
                 "value": 0
             }
         }
 
+# General
 
 class ConfigExecutor(Config):
-    name: Literal["ConfigExecutor"] = "ConfigExecutor"
-    value: Union[PackageExecutor]
+    name: Literal["ConfigExecutor"] = "ConfigExecutor" # değişmez
+    value: Union[RotateExecutor, ResizeExecutor] #executorları yazma yeri.
     type: Literal["executor"] = "executor"
     field: Literal["dependentDropdownlist"] = "dependentDropdownlist"
 
     class Config:
-        title = "Task"
-        json_schema_extra = {
-            "target": "value"
-        }
+        title = "Task" 
 
 
 class PackageConfigs(Configs):
     executor: ConfigExecutor
-
+    # Sistemsel
 
 class PackageModel(Package):
     configs: PackageConfigs
     type: Literal["component"] = "component"
-    name: Literal["Package"] = "Package"
+    name: Literal["Test"] = "Test"
+
+    # Literal değiştirilemez!!
