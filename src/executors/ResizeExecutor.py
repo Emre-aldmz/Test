@@ -11,8 +11,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../../../../'))
 from sdks.novavision.src.media.image import Image #media/
 from sdks.novavision.src.base.component import Component # casule/ vb.
 from sdks.novavision.src.helper.executor import Executor # Executoru 
-from components.Package.src.utils.response import build_response_resize # gerekli
-from components.Package.src.models.PackageModel import PackageModel #gerekli
+from components.Test.src.utils.response import build_response_resize # gerekli
+from components.Test.src.models.PackageModel import PackageModel #gerekli
 
 
 class ResizeExecutor(Component): # Sabit

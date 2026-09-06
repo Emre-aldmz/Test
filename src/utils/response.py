@@ -1,15 +1,27 @@
 
 from sdks.novavision.src.helper.package import PackageHelper
-from components.Package.src.models.PackageModel import PackageModel, PackageConfigs, ConfigExecutor, PackageOutputs, PackageResponse, PackageExecutor, OutputImage
+from components.Test.src.models.PackageModel import PackageModel, PackageConfigs, ConfigExecutor, OutputImage, RotateExecutorOutputs, RotateExecutorResponse, RotateExecutor, ResizeExecutorOutputs, ResizeExecutorResponse, ResizeExecutor
 
 
-def build_response(context):
+def build_response_rotate(context):
     outputImage = OutputImage(value=context.image)
-    Outputs = PackageOutputs(outputImage=outputImage)
-    packageResponse = PackageResponse(outputs=Outputs)
-    packageExecutor = PackageExecutor(value=packageResponse)
+    outputs = RotateExecutorOutputs(outputImage=outputImage)
+    packageResponse = RotateExecutorResponse(outputs=outputs)
+    packageExecutor = RotateExecutor(value=packageResponse)
     executor = ConfigExecutor(value=packageExecutor)
     packageConfigs = PackageConfigs(executor=executor)
     package = PackageHelper(packageModel=PackageModel, packageConfigs=packageConfigs)
     packageModel = package.build_model(context)
     return packageModel
+
+def build_response_resize(context):
+    outputImage = OutputImage(value=context.image)
+    outputs = ResizeExecutorOutputs(outputImage=outputImage)
+    packageResponse = ResizeExecutorResponse(outputs=outputs)
+    packageExecutor = ResizeExecutor(value=packageResponse)
+    executor = ConfigExecutor(value=packageExecutor)
+    packageConfigs = PackageConfigs(executor=executor)
+    package = PackageHelper(packageModel=PackageModel, packageConfigs=packageConfigs)
+    packageModel = package.build_model(context)
+    return packageModel
+    
