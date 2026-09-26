@@ -20,13 +20,13 @@ class InputImage(Input):
     class Config:
         title = "Image"
 
-class InputDetections(Input):
-    name: Literal["inputDetections"] = "inputDetections"
-    value: Union[List[Detection], List[ROI]]
-    type: str = "list"
+class InputDetection(Input):
+    name: Literal["detection"] = "detection"
+    value: Union[List[Image], Image]
+    type: str = "object"
 
     class Config:
-        title = "Detections/ROI"
+        title = "Detection/ROI"
 
 class OutputImage(Output):
     name: Literal["outputImage"] = "outputImage"
