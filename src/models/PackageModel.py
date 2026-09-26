@@ -20,21 +20,13 @@ class InputImage(Input):
     class Config:
         title = "Image"
 
-class InputDetection(Input):
-    name: Literal["inputImage"] = "inputImage"
-    value: Union[List[Image], Image]
-    type: str = "object"
-
-    @validator("type", pre=True, always=True)
-    def set_type_based_on_value(cls, value, values):
-        value = values.get('value')
-        if isinstance(value, Image):
-            return "object"
-        elif isinstance(value, list):
-            return "list"
+class InputDetections(Input):
+    name: Literal["inputDetections"] = "inputDetections"
+    value: Union[List[Detection], List[ROI]]
+    type: str = "list"
 
     class Config:
-        title = "Detection/ROI"
+        title = "Detections/ROI"
 
 class OutputImage(Output):
     name: Literal["outputImage"] = "outputImage"
