@@ -4,6 +4,22 @@ from typing import List, Optional, Union, Literal
 from sdks.novavision.src.base.model import Package, Image, Inputs, Configs, Outputs, Response, Request, Output, Input, Config
 
 
+class InputDetection(Input):
+    name: Literal["detection"] = "detection"
+    value: Union[List[Image], Image]
+    type: str = "object"
+
+    class Config:
+        title = "Detections"
+
+class InputData(Input):
+    name: Literal["data"] = "data"
+    value: Union[List[Image], Image]
+    type: str = "object"
+
+    class Config:
+        title = "Data"
+
 class InputImage(Input):
     name: Literal["inputImage"] = "inputImage"
     value: Union[List[Image], Image]
@@ -19,31 +35,6 @@ class InputImage(Input):
 
     class Config:
         title = "Image"
-        json_schema_extra = {
-            "order": 2  # Data'ya 1, Image'a 2 vererek arayüzü zorla
-        }
-
-class InputDetection(Input):
-    name: Literal["detection"] = "detection"
-    value: Union[List[Image], Image]
-    type: str = "object"
-
-    class Config:
-        title = "Detections"
-        json_schema_extra = {
-            "order": 1  # Data'ya 1, Image'a 2 vererek arayüzü zorla
-        }
-
-class InputData(Input):
-    name: Literal["data"] = "data"
-    value: Union[List[Image], Image]
-    type: str = "object"
-
-    class Config:
-        title = "Data"
-        json_schema_extra = {
-            "order": 1  # Data'ya 1, Image'a 2 vererek arayüzü zorla
-        }
 
 class OutputImage(Output):
     name: Literal["outputImage"] = "outputImage"
