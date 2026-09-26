@@ -19,6 +19,9 @@ class InputImage(Input):
 
     class Config:
         title = "Image"
+        json_schema_extra = {
+            "order": 2  # Data'ya 1, Image'a 2 vererek arayüzü zorla
+        }
 
 class InputDetection(Input):
     name: Literal["detection"] = "detection"
@@ -27,6 +30,9 @@ class InputDetection(Input):
 
     class Config:
         title = "Detections"
+        json_schema_extra = {
+            "order": 1  # Data'ya 1, Image'a 2 vererek arayüzü zorla
+        }
 
 class InputData(Input):
     name: Literal["data"] = "data"
@@ -35,6 +41,9 @@ class InputData(Input):
 
     class Config:
         title = "Data"
+        json_schema_extra = {
+            "order": 1  # Data'ya 1, Image'a 2 vererek arayüzü zorla
+        }
 
 class OutputImage(Output):
     name: Literal["outputImage"] = "outputImage"
