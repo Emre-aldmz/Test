@@ -69,8 +69,8 @@ class SizeImage(Config):
         }
  
 class ResizeExecutorInputs(Inputs):
-    inputData: InputData
     inputImage: InputImage
+    inputData: InputData
            
 class ResizeExecutorConfigs(Configs):
     sizeImage: SizeImage  
