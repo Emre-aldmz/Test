@@ -143,8 +143,8 @@ class Rotate(Config):
 
 
 class RotateExecutorInputs(Inputs):
-    inputImage: InputImage # İnputları belirle alt alta | baş harf küçük
     inputDetection: InputDetection
+    inputImage: InputImage # İnputları belirle alt alta | baş harf küçük
 
 class RotateExecutorConfigs(Configs):
     rotate: Rotate  
