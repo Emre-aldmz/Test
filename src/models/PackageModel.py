@@ -26,7 +26,15 @@ class InputDetection(Input):
     type: str = "object"
 
     class Config:
-        title = "Detection/ROI"
+        title = "Detections"
+
+class InputData(Input):
+    name: Literal["data"] = "data"
+    value: Union[List[Image], Image]
+    type: str = "object"
+
+    class Config:
+        title = "Data"
 
 class OutputImage(Output):
     name: Literal["outputImage"] = "outputImage"
@@ -61,7 +69,7 @@ class SizeImage(Config):
         }
  
 class ResizeExecutorInputs(Inputs):
-    inputDetection: InputDetection
+    inputData: InputData
     inputImage: InputImage
            
 class ResizeExecutorConfigs(Configs):
