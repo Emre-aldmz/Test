@@ -280,7 +280,6 @@ class ConfigShelfZone(Config):
     value: str
     type: Literal["string"] = "string"
     field: Literal["widget"] = "widget"
-    group: Literal["Zones"] = "Zones"
 
     class Config:
         title = "Shelf Zone"
@@ -304,7 +303,6 @@ class ConfigCheckoutZone(Config):
     value: str
     type: Literal["string"] = "string"
     field: Literal["widget"] = "widget"
-    group: Literal["Zones"] = "Zones"
 
     class Config:
         title = "Checkout Zone"
@@ -328,7 +326,6 @@ class ConfigExitZone(Config):
     value: str
     type: Literal["string"] = "string"
     field: Literal["widget"] = "widget"
-    group: Literal["Zones"] = "Zones"
 
     class Config:
         title = "Exit Zone"
@@ -382,7 +379,6 @@ class ConfigConcealmentRegions(Config):
     value: List[Union[ConcealmentWaist, ConcealmentChest, ConcealmentBag]]
     type: Literal["object"] = "object"
     field: Literal["selectBox"] = "selectBox"
-    group: Literal["Zones"] = "Zones"
 
     class Config:
         title = "Concealment Regions"
@@ -405,7 +401,6 @@ class ConfigProductClasses(Config):
     type: Literal["string"] = "string"
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["e.g., product, bottle, cosmetic"] = "e.g., product, bottle, cosmetic"
-    group: Literal["Interaction"] = "Interaction"
 
     class Config:
         title = "Product Classes"
@@ -421,7 +416,6 @@ class ConfigBagClasses(Config):
     type: Literal["string"] = "string"
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["e.g., bag, backpack, handbag"] = "e.g., bag, backpack, handbag"
-    group: Literal["Interaction"] = "Interaction"
 
     class Config:
         title = "Bag Classes"
@@ -438,7 +432,6 @@ class ConfigBasketClasses(Config):
     type: Literal["string"] = "string"
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["e.g., basket, cart"] = "e.g., basket, cart"
-    group: Literal["Interaction"] = "Interaction"
 
     class Config:
         title = "Basket / Cart Classes"
@@ -454,7 +447,6 @@ class ConfigKeyPointConfidence(Config):
     type: Literal["number"] = "number"
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["[0.0, 1.0]"] = "[0.0, 1.0]"
-    group: Literal["Interaction"] = "Interaction"
 
     class Config:
         title = "KeyPoint Confidence"
@@ -471,7 +463,6 @@ class ConfigHandRadius(Config):
     type: Literal["number"] = "number"
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["[0.01, 0.5]"] = "[0.01, 0.5]"
-    group: Literal["Interaction"] = "Interaction"
 
     class Config:
         title = "Hand Radius"
@@ -599,7 +590,6 @@ class ConfigTemporalModel(Config):
     type: Literal["object"] = "object"
     field: Literal["dependentDropdownlist"] = "dependentDropdownlist"
     restart: Literal[True] = True
-    group: Literal["Interaction"] = "Interaction"
 
     class Config:
         title = "Temporal Model"
@@ -615,7 +605,6 @@ class ConfigWindowSize(Config):
     type: Literal["number"] = "number"
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["[1.0, 10.0]"] = "[1.0, 10.0]"
-    group: Literal["Interaction"] = "Interaction"
 
     class Config:
         title = "Window Size (s)"
@@ -631,7 +620,6 @@ class ConfigWindowStride(Config):
     type: Literal["number"] = "number"
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["[0.1, 5.0]"] = "[0.1, 5.0]"
-    group: Literal["Interaction"] = "Interaction"
 
     class Config:
         title = "Window Stride (s)"
@@ -648,7 +636,6 @@ class ConfigCandidateThreshold(Config):
     type: Literal["number"] = "number"
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["[0.0, 1.0]"] = "[0.0, 1.0]"
-    group: Literal["Interaction"] = "Interaction"
 
     class Config:
         title = "Candidate Threshold"
@@ -664,7 +651,6 @@ class ConfigMinTrackDuration(Config):
     type: Literal["number"] = "number"
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["[0.0, 10.0]"] = "[0.0, 10.0]"
-    group: Literal["Interaction"] = "Interaction"
 
     class Config:
         title = "Min Track Duration (s)"
@@ -681,7 +667,6 @@ class ConfigEventCooldown(Config):
     type: Literal["number"] = "number"
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["[0.0, 300.0]"] = "[0.0, 300.0]"
-    group: Literal["Interaction"] = "Interaction"
 
     class Config:
         title = "Event Cooldown (s)"
@@ -701,7 +686,6 @@ class ConfigNumFrames(Config):
     type: Literal["number"] = "number"
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["[2, 32]"] = "[2, 32]"
-    group: Literal["Clip"] = "Clip"
 
     class Config:
         title = "Frames per Clip"
@@ -717,7 +701,6 @@ class ConfigClipPreSeconds(Config):
     type: Literal["number"] = "number"
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["[0.0, 10.0]"] = "[0.0, 10.0]"
-    group: Literal["Clip"] = "Clip"
 
     class Config:
         title = "Pre-Event (s)"
@@ -733,7 +716,6 @@ class ConfigClipPostSeconds(Config):
     type: Literal["number"] = "number"
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["[0.0, 10.0]"] = "[0.0, 10.0]"
-    group: Literal["Clip"] = "Clip"
 
     class Config:
         title = "Post-Event (s)"
@@ -820,7 +802,6 @@ class ConfigAnonymize(Config):
     value: Union[AnonymizeEnable, AnonymizeDisable]
     type: Literal["object"] = "object"
     field: Literal["dependentDropdownlist"] = "dependentDropdownlist"
-    group: Literal["Clip"] = "Clip"
 
     class Config:
         title = "Face Anonymisation"
@@ -855,7 +836,6 @@ class ConfigHighlightSuspect(Config):
     value: Union[HighlightSuspectTrue, HighlightSuspectFalse]
     type: Literal["object"] = "object"
     field: Literal["dropdownlist"] = "dropdownlist"
-    group: Literal["Clip"] = "Clip"
 
     class Config:
         title = "Highlight Suspect"
@@ -1146,7 +1126,6 @@ class ConfigVlmBackend(Config):
     type: Literal["object"] = "object"
     field: Literal["dependentDropdownlist"] = "dependentDropdownlist"
     restart: Literal[True] = True
-    group: Literal["VLM"] = "VLM"
 
     class Config:
         title = "VLM Backend"
@@ -1193,7 +1172,6 @@ class ConfigOutputLanguage(Config):
     value: Union[LanguageTurkish, LanguageEnglish, LanguageEnglishToTurkish]
     type: Literal["object"] = "object"
     field: Literal["dropdownlist"] = "dropdownlist"
-    group: Literal["VLM"] = "VLM"
 
     class Config:
         title = "Reason Language"
@@ -1228,7 +1206,6 @@ class ConfigStructuralSummary(Config):
     value: Union[StructuralSummaryTrue, StructuralSummaryFalse]
     type: Literal["object"] = "object"
     field: Literal["dropdownlist"] = "dropdownlist"
-    group: Literal["VLM"] = "VLM"
 
     class Config:
         title = "Structural Summary in Prompt"
@@ -1246,7 +1223,6 @@ class ConfigPromptInstruction(Config):
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["e.g., Cosmetics aisle, small items are often hidden in sleeves."] = \
         "e.g., Cosmetics aisle, small items are often hidden in sleeves."
-    group: Literal["VLM"] = "VLM"
 
     class Config:
         title = "Extra Prompt Instruction"
@@ -1262,7 +1238,6 @@ class ConfigMaxNewTokens(Config):
     type: Literal["number"] = "number"
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["[32, 1024]"] = "[32, 1024]"
-    group: Literal["VLM"] = "VLM"
 
     class Config:
         title = "Max New Tokens"
@@ -1278,7 +1253,6 @@ class ConfigTemperature(Config):
     type: Literal["number"] = "number"
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["[0.0, 2.0]"] = "[0.0, 2.0]"
-    group: Literal["VLM"] = "VLM"
 
     class Config:
         title = "Temperature"
@@ -1295,7 +1269,6 @@ class ConfigVlmTimeout(Config):
     type: Literal["number"] = "number"
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["[1.0, 60.0]"] = "[1.0, 60.0]"
-    group: Literal["VLM"] = "VLM"
 
     class Config:
         title = "VLM Timeout (s)"
@@ -1334,7 +1307,6 @@ class ConfigAlarmDecisions(Config):
     value: List[Union[AlarmDecisionTheft, AlarmDecisionSuspicious]]
     type: Literal["object"] = "object"
     field: Literal["selectBox"] = "selectBox"
-    group: Literal["Alarm"] = "Alarm"
 
     class Config:
         title = "Alarm Decisions"
@@ -1350,7 +1322,6 @@ class ConfigAlarmConfidence(Config):
     type: Literal["number"] = "number"
     field: Literal["textInput"] = "textInput"
     placeHolder: Literal["[0.0, 1.0]"] = "[0.0, 1.0]"
-    group: Literal["Alarm"] = "Alarm"
 
     class Config:
         title = "Alarm Confidence"
@@ -1386,7 +1357,6 @@ class ConfigOperationMode(Config):
     value: Union[OperationModeActive, OperationModeObservation]
     type: Literal["object"] = "object"
     field: Literal["dropdownlist"] = "dropdownlist"
-    group: Literal["Alarm"] = "Alarm"
 
     class Config:
         title = "Operation Mode"
@@ -1421,7 +1391,6 @@ class ConfigDrawOverlay(Config):
     value: Union[DrawOverlayTrue, DrawOverlayFalse]
     type: Literal["object"] = "object"
     field: Literal["dropdownlist"] = "dropdownlist"
-    group: Literal["Alarm"] = "Alarm"
 
     class Config:
         title = "Draw Overlay"
