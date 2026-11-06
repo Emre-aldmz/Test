@@ -56,20 +56,6 @@ class InteractionStep(Model):
     endTime: float
 
 
-class CandidateEvent(Model):
-    """Stage-1 output: a suspicious event candidate waiting for VLM verification."""
-    eventID: str
-    trackerID: int
-    startTime: float
-    endTime: float
-    score: float
-    interactionSequence: List[InteractionStep] = []
-    structuralSummary: str = ""
-    boundingBox: Optional[BoundingBox] = None
-    clipFrameKeys: List[str] = []
-    imgUID: Optional[str] = None
-
-
 class TheftAlarm(Model):
     """Stage-2 output: VLM-verified event with a natural-language justification."""
     eventID: str
@@ -82,6 +68,9 @@ class TheftAlarm(Model):
     language: str
     notify: bool
     stage1Score: Optional[float] = None
+    verifiedByVlm: bool = True
+    interactionSequence: List[InteractionStep] = []
+    structuralSummary: str = ""
     latencyMs: Optional[float] = None
     boundingBox: Optional[BoundingBox] = None
     clipFrameKeys: List[str] = []
@@ -127,16 +116,6 @@ class InputObjects(Input):
 
     class Config:
         title = "Objects"
-
-
-class InputCandidates(Input):
-    """Candidate events produced by the CandidateDetection executor."""
-    name: Literal["inputCandidates"] = "inputCandidates"
-    value: List[CandidateEvent]
-    type: Literal["list"] = "list"
-
-    class Config:
-        title = "Candidate Events"
 
 
 # =====================================================================================
@@ -201,38 +180,6 @@ class OutputROI(Output):
         title = "Zones"
 
 
-class OutputCandidates(Output):
-    name: Literal["outputCandidates"] = "outputCandidates"
-    value: List[CandidateEvent]
-    type: Literal["list"] = "list"
-
-    class Config:
-        title = "Candidate Events"
-        json_schema_extra = {
-            "outputStructure": [
-                {
-                    "eventID": "string",
-                    "trackerID": "int",
-                    "startTime": "float",
-                    "endTime": "float",
-                    "score": "float",
-                    "interactionSequence": [
-                        {"phase": "string", "hand": "string", "startTime": "float", "endTime": "float"}
-                    ],
-                    "structuralSummary": "string",
-                    "boundingBox": {"left": "float", "top": "float", "width": "float", "height": "float"},
-                    "clipFrameKeys": ["string"],
-                    "imgUID": "string"
-                }
-            ],
-            "outputNotes": [
-                "Emitted only when the temporal classifier score exceeds the candidate threshold.",
-                "clipFrameKeys point to the sampled, anonymised clip frames stored in Redis.",
-                "structuralSummary is the text added to the VLM prompt, e.g. 'hand in shelf 3.1-3.8 s, waist 4.2 s'."
-            ]
-        }
-
-
 class OutputAlarms(Output):
     name: Literal["outputAlarms"] = "outputAlarms"
     value: List[TheftAlarm]
@@ -253,6 +200,11 @@ class OutputAlarms(Output):
                     "language": "string",
                     "notify": "bool",
                     "stage1Score": "float",
+                    "verifiedByVlm": "bool",
+                    "interactionSequence": [
+                        {"phase": "string", "hand": "string", "startTime": "float", "endTime": "float"}
+                    ],
+                    "structuralSummary": "string",
                     "latencyMs": "float",
                     "boundingBox": {"left": "float", "top": "float", "width": "float", "height": "float"},
                     "clipFrameKeys": ["string"],
@@ -260,7 +212,9 @@ class OutputAlarms(Output):
                 }
             ],
             "outputNotes": [
-                "One entry per verified candidate; decisions not selected in 'Alarm Decisions' get notify=false.",
+                "One entry per stage-1 candidate once its VLM verification finishes (asynchronous, a few frames later).",
+                "Decisions not selected in 'Alarm Decisions' or below 'Alarm Confidence' get notify=false.",
+                "When VLM Verification is disabled, every candidate is emitted as decision='suspicious', verifiedByVlm=false, reason=structuralSummary.",
                 "In Observation mode every entry has notify=false (shadow / field-validation mode).",
                 "reason is the VLM justification, e.g. 'Kişi raftan aldığı ürünü ceket iç cebine yerleştirdi'."
             ]
@@ -1398,7 +1352,57 @@ class ConfigDrawOverlay(Config):
 
 
 # =====================================================================================
-# Executor: ShelfGuard (Hybrid: Stage 1 + Stage 2)
+# Config params - VLM verification switch
+# =====================================================================================
+
+class VlmVerificationEnable(Config):
+    configVlmBackend: ConfigVlmBackend
+    configOutputLanguage: ConfigOutputLanguage
+    configStructuralSummary: ConfigStructuralSummary
+    configPromptInstruction: ConfigPromptInstruction
+    configMaxNewTokens: ConfigMaxNewTokens
+    configTemperature: ConfigTemperature
+    configVlmTimeout: ConfigVlmTimeout
+    configAlarmDecisions: ConfigAlarmDecisions
+    configAlarmConfidence: ConfigAlarmConfidence
+    name: Literal["vlmVerificationEnable"] = "vlmVerificationEnable"
+    value: Literal["Enable"] = "Enable"
+    type: Literal["string"] = "string"
+    field: Literal["option"] = "option"
+
+    class Config:
+        title = "Enable (Hybrid)"
+
+
+class VlmVerificationDisable(Config):
+    name: Literal["vlmVerificationDisable"] = "vlmVerificationDisable"
+    value: Literal["Disable"] = "Disable"
+    type: Literal["string"] = "string"
+    field: Literal["option"] = "option"
+
+    class Config:
+        title = "Disable (Stage 1 Only)"
+
+
+class ConfigVlmVerification(Config):
+    """
+        Enables the second stage. Candidate clips are verified by the VLM in a background worker,
+        so the video stream is never blocked; results appear in outputAlarms a few frames later.
+        'Disable' runs stage 1 only (baseline): every candidate is reported as 'suspicious'.
+    """
+    name: Literal["configVlmVerification"] = "configVlmVerification"
+    value: Union[VlmVerificationEnable, VlmVerificationDisable]
+    type: Literal["object"] = "object"
+    field: Literal["dependentDropdownlist"] = "dependentDropdownlist"
+    restart: Literal[True] = True
+
+    class Config:
+        title = "VLM Verification"
+        json_schema_extra = {"shortDescription": "Hybrid or Stage-1 Only"}
+
+
+# =====================================================================================
+# Executor: ShelfGuard
 # =====================================================================================
 
 class ShelfGuardInputs(Inputs):
@@ -1413,7 +1417,7 @@ class ShelfGuardConfigs(Configs):
     configCheckoutZone: ConfigCheckoutZone
     configExitZone: ConfigExitZone
     configConcealmentRegions: ConfigConcealmentRegions
-    # Interaction / Stage 1
+    # Stage 1 - interaction + temporal classifier
     configProductClasses: ConfigProductClasses
     configBagClasses: ConfigBagClasses
     configBasketClasses: ConfigBasketClasses
@@ -1431,17 +1435,9 @@ class ShelfGuardConfigs(Configs):
     configClipPostSeconds: ConfigClipPostSeconds
     configAnonymize: ConfigAnonymize
     configHighlightSuspect: ConfigHighlightSuspect
-    # VLM / Stage 2
-    configVlmBackend: ConfigVlmBackend
-    configOutputLanguage: ConfigOutputLanguage
-    configStructuralSummary: ConfigStructuralSummary
-    configPromptInstruction: ConfigPromptInstruction
-    configMaxNewTokens: ConfigMaxNewTokens
-    configTemperature: ConfigTemperature
-    configVlmTimeout: ConfigVlmTimeout
-    # Alarm
-    configAlarmDecisions: ConfigAlarmDecisions
-    configAlarmConfidence: ConfigAlarmConfidence
+    # Stage 2 - VLM (+ alarm decision rules)
+    configVlmVerification: ConfigVlmVerification
+    # Output
     configOperationMode: ConfigOperationMode
     configDrawOverlay: ConfigDrawOverlay
 
@@ -1474,138 +1470,7 @@ class ShelfGuardExecutor(Config):
     field: Literal["option"] = "option"
 
     class Config:
-        title = "Hybrid (Stage 1 + VLM)"
-        json_schema_extra = {
-            "target": {
-                "value": 0
-            }
-        }
-
-
-# =====================================================================================
-# Executor: CandidateDetection (Stage 1 only - edge)
-# =====================================================================================
-
-class CandidateDetectionInputs(Inputs):
-    inputImage: InputImage
-    inputDetections: InputDetections
-    inputObjects: Optional[InputObjects]
-
-
-class CandidateDetectionConfigs(Configs):
-    # Zones
-    configShelfZone: ConfigShelfZone
-    configCheckoutZone: ConfigCheckoutZone
-    configExitZone: ConfigExitZone
-    configConcealmentRegions: ConfigConcealmentRegions
-    # Interaction / Stage 1
-    configProductClasses: ConfigProductClasses
-    configBagClasses: ConfigBagClasses
-    configBasketClasses: ConfigBasketClasses
-    configKeyPointConfidence: ConfigKeyPointConfidence
-    configHandRadius: ConfigHandRadius
-    configTemporalModel: ConfigTemporalModel
-    configWindowSize: ConfigWindowSize
-    configWindowStride: ConfigWindowStride
-    configCandidateThreshold: ConfigCandidateThreshold
-    configMinTrackDuration: ConfigMinTrackDuration
-    configEventCooldown: ConfigEventCooldown
-    # Clip
-    configNumFrames: ConfigNumFrames
-    configClipPreSeconds: ConfigClipPreSeconds
-    configClipPostSeconds: ConfigClipPostSeconds
-    configAnonymize: ConfigAnonymize
-    configHighlightSuspect: ConfigHighlightSuspect
-    # Visualisation
-    configDrawOverlay: ConfigDrawOverlay
-
-
-class CandidateDetectionOutputs(Outputs):
-    outputImage: OutputImage
-    outputDetections: OutputDetections
-    outputCandidates: OutputCandidates
-    outputROI: OutputROI
-
-
-class CandidateDetectionRequest(Request):
-    inputs: Optional[CandidateDetectionInputs]
-    configs: CandidateDetectionConfigs
-
-    class Config:
-        json_schema_extra = {
-            "target": "configs"
-        }
-
-
-class CandidateDetectionResponse(Response):
-    outputs: CandidateDetectionOutputs
-
-
-class CandidateDetectionExecutor(Config):
-    name: Literal["CandidateDetection"] = "CandidateDetection"
-    value: Union[CandidateDetectionRequest, CandidateDetectionResponse]
-    type: Literal["object"] = "object"
-    field: Literal["option"] = "option"
-
-    class Config:
-        title = "Stage 1 - Candidate Detection"
-        json_schema_extra = {
-            "target": {
-                "value": 0
-            }
-        }
-
-
-# =====================================================================================
-# Executor: VLMVerification (Stage 2 only - GPU server)
-# =====================================================================================
-
-class VLMVerificationInputs(Inputs):
-    inputImage: InputImage
-    inputCandidates: InputCandidates
-
-
-class VLMVerificationConfigs(Configs):
-    configVlmBackend: ConfigVlmBackend
-    configOutputLanguage: ConfigOutputLanguage
-    configStructuralSummary: ConfigStructuralSummary
-    configPromptInstruction: ConfigPromptInstruction
-    configMaxNewTokens: ConfigMaxNewTokens
-    configTemperature: ConfigTemperature
-    configVlmTimeout: ConfigVlmTimeout
-    configAlarmDecisions: ConfigAlarmDecisions
-    configAlarmConfidence: ConfigAlarmConfidence
-    configOperationMode: ConfigOperationMode
-    configDrawOverlay: ConfigDrawOverlay
-
-
-class VLMVerificationOutputs(Outputs):
-    outputImage: OutputImage
-    outputAlarms: OutputAlarms
-
-
-class VLMVerificationRequest(Request):
-    inputs: Optional[VLMVerificationInputs]
-    configs: VLMVerificationConfigs
-
-    class Config:
-        json_schema_extra = {
-            "target": "configs"
-        }
-
-
-class VLMVerificationResponse(Response):
-    outputs: VLMVerificationOutputs
-
-
-class VLMVerificationExecutor(Config):
-    name: Literal["VLMVerification"] = "VLMVerification"
-    value: Union[VLMVerificationRequest, VLMVerificationResponse]
-    type: Literal["object"] = "object"
-    field: Literal["option"] = "option"
-
-    class Config:
-        title = "Stage 2 - VLM Verification"
+        title = "Shelf Guard"
         json_schema_extra = {
             "target": {
                 "value": 0
@@ -1618,14 +1483,8 @@ class VLMVerificationExecutor(Config):
 # =====================================================================================
 
 class ConfigExecutor(Config):
-    """
-        Selects how the capsule runs:
-        'Hybrid' runs the full cascade (stage 1 candidates verified by the VLM) in one node.
-        'Stage 1' only produces candidate events (edge device, baseline evaluation).
-        'Stage 2' only verifies candidate events with the VLM (separate GPU server).
-    """
     name: Literal["ConfigExecutor"] = "ConfigExecutor"
-    value: Union[ShelfGuardExecutor, CandidateDetectionExecutor, VLMVerificationExecutor]
+    value: Union[ShelfGuardExecutor]
     type: Literal["executor"] = "executor"
     field: Literal["dependentDropdownlist"] = "dependentDropdownlist"
     restart: Literal[True] = True
@@ -1633,7 +1492,7 @@ class ConfigExecutor(Config):
     class Config:
         title = "Task"
         json_schema_extra = {
-            "shortDescription": "Select Pipeline Stage"
+            "target": "value"
         }
 
 
